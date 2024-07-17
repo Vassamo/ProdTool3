@@ -38,9 +38,9 @@
             </BorderPane>
          </bottom>
          <top>
-            <FlowPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <FlowPane prefHeight="30.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
-                  <Button fx:id="addCategoryButton" mnemonicParsing="false" onAction="#handleAddCategoryButtonClick" prefHeight="25.0" prefWidth="117.0" text="Add Category" />
+                  <Button fx:id="addCategoryButton" mnemonicParsing="false" onAction="#handleAddCategoryButtonClick" prefHeight="25.0" prefWidth="106.0" text="Add Category" />
                   <Button fx:id="addProductButton" mnemonicParsing="false" onAction="#handleAddProductButtonClick" prefHeight="25.0" prefWidth="105.0" text="Add Product" />
                </children>
             </FlowPane>
