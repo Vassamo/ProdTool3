@@ -18,8 +18,13 @@ public class ControllerCategory {
     private Button addCategoryButton;
 
     private CategoryClass rootCategory;
+    private CategoryClass currentCategory;
 
     public void initialize() {
+        
+        if (currentCategory == null)
+            currentCategory = rootCategory;
+        
         // Inicjalizacja danych i ustawienie TreeView
         rootCategory = createSampleData();
         TreeItem<String> rootItem = createTreeItem(rootCategory);
