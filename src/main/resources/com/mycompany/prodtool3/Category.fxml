@@ -10,13 +10,6 @@
 <AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.prodtool3.ControllerCategory">
    <children>
       <BorderPane layoutX="-2.0" prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="-2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="0.0">
-         <top>
-            <Button fx:id="addCategoryButton" mnemonicParsing="false" onAction="#handleAddCategoryButtonClick" prefHeight="25.0" prefWidth="572.0" text="Add Category" BorderPane.alignment="TOP_CENTER">
-               <BorderPane.margin>
-                  <Insets top="10.0" />
-               </BorderPane.margin>
-            </Button>
-         </top>
          <center>
             <GridPane fx:id="mainGrid" BorderPane.alignment="CENTER">
                <columnConstraints>
@@ -44,6 +37,14 @@
                </right>
             </BorderPane>
          </bottom>
+         <top>
+            <FlowPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+               <children>
+                  <Button fx:id="addCategoryButton" mnemonicParsing="false" onAction="#handleAddCategoryButtonClick" prefHeight="25.0" prefWidth="117.0" text="Add Category" />
+                  <Button fx:id="addProductButton" mnemonicParsing="false" onAction="#handleAddProductButtonClick" prefHeight="25.0" prefWidth="105.0" text="Add Product" />
+               </children>
+            </FlowPane>
+         </top>
       </BorderPane>
    </children>
 </AnchorPane>

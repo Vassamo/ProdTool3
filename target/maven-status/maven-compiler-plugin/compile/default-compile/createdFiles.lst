@@ -1,4 +1,5 @@
 com\mycompany\prodtool3\Product.class
+com\mycompany\prodtool3\ControllerAddProductDialog.class
 com\mycompany\prodtool3\ControllerCategory.class
 com\mycompany\prodtool3\ControllerAddCategoryDialog.class
 module-info.class

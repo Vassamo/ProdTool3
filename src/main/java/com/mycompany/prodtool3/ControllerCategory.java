@@ -16,15 +16,12 @@ public class ControllerCategory {
     private ListView<String> productListView;
     @FXML
     private Button addCategoryButton;
+    @FXML
+    private Button addProductButton;
 
     private CategoryClass rootCategory;
-    private CategoryClass currentCategory;
 
     public void initialize() {
-        
-        if (currentCategory == null)
-            currentCategory = rootCategory;
-        
         // Inicjalizacja danych i ustawienie TreeView
         rootCategory = createSampleData();
         TreeItem<String> rootItem = createTreeItem(rootCategory);
@@ -54,10 +51,25 @@ public class ControllerCategory {
         }
     }
 
+    @FXML
+    private void handleAddProductButtonClick() {
+        CategoryClass selectedCategory = getSelectedCategory();
+        if (selectedCategory != null) {
+            ControllerAddProductDialog dialog = new ControllerAddProductDialog(getStage(), selectedCategory);
+            dialog.show();
+            refreshProductList(selectedCategory);
+        }
+    }
+
     private void refreshTreeView() {
         TreeItem<String> rootItem = createTreeItem(rootCategory);
         categoryTreeView.setRoot(rootItem);
         categoryTreeView.setShowRoot(true);
+    }
+
+    private void refreshProductList(CategoryClass category) {
+        List<String> productNames = category.getProductsNames();
+        productListView.setItems(FXCollections.observableArrayList(productNames));
     }
 
     private CategoryClass findCategoryByName(CategoryClass currentCategory, String categoryName) {
