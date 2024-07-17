@@ -91,7 +91,7 @@ public class CategoryClass {
             //App.setRoot("CategoryClass");
                     handleAddButtonClick();
             ControllerAddCategoryDialog dialog = new ControllerAddCategoryDialog(getStage(), this);
-            dialog.show();          
+            dialog.showAndWait();
             //com.mycompany.prodtool3.App.setRoot("CategoryClass");
         } catch (Exception e) {
             e.printStackTrace();

@@ -47,7 +47,7 @@ public class ControllerAddCategoryDialog {
         stage.setScene(scene);
     }
 
-    public void show() {
+    public void showAndWait() {
         stage.showAndWait();
     }
 }
