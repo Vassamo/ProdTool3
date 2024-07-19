@@ -6,8 +6,13 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.collections.FXCollections;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.layout.GridPane;
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class ControllerCategory {
@@ -24,9 +29,19 @@ public class ControllerCategory {
 
     private CategoryClass rootCategory;
     private CategoryClass currentCategory;
+    private final int IconsSize = 32;
 
     public void initialize() {
-        // Initialize data and set up the TreeView
+        // Load the image from the resources directory
+        ImageResizer resizer = new ImageResizer();
+        Image resizedIcon = resizer.resizeImage(getClass().getResource("/DeafultImages/addFolder.png").toString(), IconsSize, IconsSize);
+        ImageView ResizedImg = new ImageView(resizedIcon);
+        addCategoryButton.setGraphic(ResizedImg);  
+        resizedIcon = resizer.resizeImage(getClass().getResource("/DeafultImages/addFile.png").toString(), IconsSize, IconsSize);
+        ResizedImg = new ImageView(resizedIcon);
+        addProductButton.setGraphic(ResizedImg);
+
+// Initialize data and set up the TreeView
         rootCategory = createSampleData();
         currentCategory = rootCategory;
         updateTreeView();
@@ -156,4 +171,38 @@ public class ControllerCategory {
 
         return electronics;
     }
+    
+   public class ImageResizer {
+
+    /**
+     * Resizes an image to the specified width and height.
+     *
+     * @param imagePath the path to the image file
+     * @param width the desired width
+     * @param height the desired height
+     * @return the resized Image
+     */
+    public Image resizeImage(String imagePath, double width, double height) {
+        // Load the image
+        Image originalImage = new Image(imagePath);
+
+        // Create an ImageView for resizing
+        ImageView imageView = new ImageView(originalImage);
+        imageView.setFitWidth(width);
+        imageView.setFitHeight(height);
+        imageView.setPreserveRatio(true);
+
+        // Prepare snapshot parameters to preserve transparency
+        SnapshotParameters params = new SnapshotParameters();
+        params.setFill(Color.TRANSPARENT);
+
+        // Create a writable image with the desired size
+        WritableImage resizedImage = new WritableImage((int) width, (int) height);
+
+        // Capture the snapshot of the resized image view
+        imageView.snapshot(params, resizedImage);
+
+        return resizedImage;
+    }
+}
 }

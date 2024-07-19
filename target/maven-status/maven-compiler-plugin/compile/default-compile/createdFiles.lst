@@ -5,3 +5,4 @@ com\mycompany\prodtool3\ControllerAddCategoryDialog.class
 module-info.class
 com\mycompany\prodtool3\CategoryClass.class
 com\mycompany\prodtool3\App.class
+com\mycompany\prodtool3\ControllerCategory$ImageResizer.class
