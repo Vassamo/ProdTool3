@@ -10,7 +10,7 @@
 
 <AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.prodtool3.ControllerCategory">
    <children>
-      <BorderPane layoutX="-2.0" prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="-2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="0.0">
+      <BorderPane layoutX="-2.0" prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <bottom>
             <BorderPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <center>
@@ -28,7 +28,7 @@
          <top>
             <FlowPane prefHeight="30.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
-                  <Button fx:id="addCategoryButton" mnemonicParsing="false" onAction="#handleAddCategoryButtonClick">
+                  <Button fx:id="addCategoryButton" mnemonicParsing="false" onAction="#handleAddCategoryButtonClick" prefHeight="32.0" prefWidth="32.0" textOverrun="CLIP">
                      <tooltip>
                         <Tooltip text="Add Category">
                            <font>
@@ -36,7 +36,7 @@
                            </font>
                         </Tooltip>
                      </tooltip></Button>
-                  <Button fx:id="addProductButton" mnemonicParsing="false" onAction="#handleAddProductButtonClick">
+                  <Button fx:id="addProductButton" mnemonicParsing="false" onAction="#handleAddProductButtonClick" prefHeight="32.0" prefWidth="32.0">
                      <tooltip>
                         <Tooltip text="Add Product">
                            <font>
@@ -44,11 +44,17 @@
                            </font>
                         </Tooltip>
                      </tooltip></Button>
+                  <Pane prefHeight="32.0" prefWidth="32.0" />
+                  <Button mnemonicParsing="false" prefHeight="32.0" prefWidth="32.0" />
                </children>
             </FlowPane>
          </top>
          <center>
-            <TilePane fx:id="tileGrid" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+            <TilePane fx:id="tileGrid" hgap="4.0" prefHeight="200.0" prefWidth="200.0" vgap="4.0" BorderPane.alignment="CENTER">
+               <BorderPane.margin>
+                  <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+               </BorderPane.margin>
+            </TilePane>
          </center>
       </BorderPane>
    </children>
