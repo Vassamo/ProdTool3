@@ -26,7 +26,7 @@ public class ControllerCategory {
     private CategoryClass currentCategory;
 
     public void initialize() {
-        // Inicjalizacja danych i ustawianie TreeView
+        // Initialize data and set up the TreeView
         rootCategory = createSampleData();
         currentCategory = rootCategory;
         updateTreeView();
@@ -39,7 +39,9 @@ public class ControllerCategory {
                 CategoryClass selectedCategory = findCategoryByName(rootCategory, selectedCategoryName);
                 if (selectedCategory != null) {
                     currentCategory = selectedCategory;
+                    System.out.println("Switched to category: " + selectedCategory.getName()); // Log category switch
                     updateProductList(selectedCategory);
+                    updateMainGrid();
                 }
             }
         });
@@ -51,7 +53,7 @@ public class ControllerCategory {
         Stage stage = (Stage) addCategoryButton.getScene().getWindow();
         ControllerAddCategoryDialog dialog = new ControllerAddCategoryDialog(stage, selectedCategory);
         dialog.showAndWait();
-        // Po dodaniu nowej kategorii odśwież widok
+        // Refresh view after adding a new category
         updateTreeView();
         updateMainGrid();
     }
@@ -62,7 +64,7 @@ public class ControllerCategory {
         if (selectedCategory != null) {
             ControllerAddProductDialog dialog = new ControllerAddProductDialog(selectedCategory);
             dialog.showAndWait();
-            // Po dodaniu nowego produktu odśwież widok
+            // Refresh view after adding a new product
             updateProductList(selectedCategory);
         }
     }
@@ -85,28 +87,31 @@ public class ControllerCategory {
     private void updateMainGrid() {
         mainGrid.getChildren().clear();
 
-        Button backButton = new Button("Back");
-        backButton.setMaxWidth(Double.MAX_VALUE);
-        backButton.setOnAction(e -> {
-            if (currentCategory.getParentCategory() != null) {
+        int columnIndex = 0;
+
+        if (currentCategory.getParentCategory() != null) {
+            Button backButton = new Button("Back");
+            backButton.setMaxWidth(Double.MAX_VALUE);
+            backButton.setOnAction(e -> {
                 currentCategory = currentCategory.getParentCategory();
+                System.out.println("Switched to category: " + currentCategory.getName()); // Log category switch
                 updateMainGrid();
                 updateProductList(currentCategory);
-            }
-        });
-        mainGrid.add(backButton, 0, 0);
+            });
+            mainGrid.add(backButton, columnIndex++, 0);
+        }
 
         List<CategoryClass> subcategories = currentCategory.getSubcategories();
-        for (int i = 0; i < subcategories.size(); i++) {
-            CategoryClass subcategory = subcategories.get(i);
+        for (CategoryClass subcategory : subcategories) {
             Button button = new Button(subcategory.getName());
             button.setMaxWidth(Double.MAX_VALUE);
             button.setOnAction(e -> {
                 currentCategory = subcategory;
+                System.out.println("Switched to category: " + subcategory.getName()); // Log category switch
                 updateMainGrid();
                 updateProductList(currentCategory);
             });
-            mainGrid.add(button, i + 1, 0);
+            mainGrid.add(button, columnIndex++, 0);
         }
     }
 
@@ -125,7 +130,7 @@ public class ControllerCategory {
 
     private TreeItem<String> createTreeItem(CategoryClass category) {
         TreeItem<String> item = new TreeItem<>(category.getName());
-        item.setExpanded(true); // Opcjonalnie, aby rozwijać elementy po dodaniu
+        item.setExpanded(true); // Optionally expand items on creation
         for (CategoryClass subcategory : category.getSubcategories()) {
             item.getChildren().add(createTreeItem(subcategory));
         }
