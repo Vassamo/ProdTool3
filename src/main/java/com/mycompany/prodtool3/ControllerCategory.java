@@ -1,23 +1,29 @@
 package com.mycompany.prodtool3;
 
+import java.io.FileWriter;
+import java.io.FileReader;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import java.io.File;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.TilePane;
+import javafx.scene.control.ContentDisplay;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-
-import java.io.*;
-import java.lang.reflect.Type;
-import java.util.List;
-import javafx.collections.FXCollections;
-import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.TreeItem;
 
 public class ControllerCategory {
 
@@ -32,14 +38,15 @@ public class ControllerCategory {
     @FXML
     private Button addProductButton;
     @FXML
-    private Button exportButton; // Dodaj to
+    private Button exportButton;
     @FXML
-    private Button importButton; // Dodaj to
+    private Button importButton;
 
     private CategoryClass rootCategory;
     private CategoryClass currentCategory;
 
-    private static final int ICON_SIZE = 32;
+    private static final int ICON_SIZE_DEFAULT = 48;
+    private static final int ICON_SIZE_ACTION_BUTTONS = 32;
 
     public void initialize() {
         initializeIcons();
@@ -60,15 +67,14 @@ public class ControllerCategory {
                 }
             }
         });
-
-        exportButton.setOnAction(event -> handleExport());
-        importButton.setOnAction(event -> handleImport());
     }
 
     private void initializeIcons() {
         ImageResizer resizer = new ImageResizer();
-        addCategoryButton.setGraphic(createIcon(resizer, "/DeafultImages/addFolder.png", ICON_SIZE));
-        addProductButton.setGraphic(createIcon(resizer, "/DeafultImages/addFile.png", ICON_SIZE));
+        addCategoryButton.setGraphic(createIcon(resizer, "/DeafultImages/addFolder.png", ICON_SIZE_ACTION_BUTTONS));
+        addProductButton.setGraphic(createIcon(resizer, "/DeafultImages/addFile.png", ICON_SIZE_ACTION_BUTTONS));
+        exportButton.setGraphic(createIcon(resizer, "/DeafultImages/export.png", ICON_SIZE_ACTION_BUTTONS));
+        importButton.setGraphic(createIcon(resizer, "/DeafultImages/import.png", ICON_SIZE_ACTION_BUTTONS));
     }
 
     private ImageView createIcon(ImageResizer resizer, String path, int size) {
@@ -94,6 +100,57 @@ public class ControllerCategory {
         }
     }
 
+    @FXML
+    private void handleExport() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Export Categories");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
+        Stage stage = (Stage) exportButton.getScene().getWindow();
+        File file = fileChooser.showSaveDialog(stage);
+
+        if (file != null) {
+            try (FileWriter writer = new FileWriter(file)) {
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                gson.toJson(rootCategory, writer);
+                showAlert("Export Successful", "The export was completed successfully.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @FXML
+    private void handleImport() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Import Categories");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
+        Stage stage = (Stage) importButton.getScene().getWindow();
+        File file = fileChooser.showOpenDialog(stage);
+
+        if (file != null) {
+            try (FileReader reader = new FileReader(file)) {
+                Gson gson = new Gson();
+                Type categoryType = new TypeToken<CategoryClass>() {}.getType();
+                rootCategory = gson.fromJson(reader, categoryType);
+                currentCategory = rootCategory;
+                updateTreeView();
+                updateTileGrid();
+                updateProductList(currentCategory);
+                showAlert("Import Successful", "The import was completed successfully.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void showAlert(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+
     private void updateTreeView() {
         categoryTreeView.setRoot(createTreeItem(rootCategory));
         categoryTreeView.setShowRoot(true);
@@ -108,23 +165,24 @@ public class ControllerCategory {
         tileGrid.getChildren().clear();
 
         if (currentCategory.getParentCategory() != null) {
-            Button backButton = createCategoryButton("Back", currentCategory.getParentCategory(), "/DeafultImages/back.png");
+            Button backButton = createCategoryButton("Back", currentCategory.getParentCategory(), "/DeafultImages/back.png", ICON_SIZE_DEFAULT);
             tileGrid.getChildren().add(backButton);
         }
 
         for (CategoryClass subcategory : currentCategory.getSubcategories()) {
-            Button button = createCategoryButton(subcategory.getName(), subcategory, "/DeafultImages/folder.png");
+            Button button = createCategoryButton(subcategory.getName(), subcategory, "/DeafultImages/folder.png", ICON_SIZE_DEFAULT);
             tileGrid.getChildren().add(button);
         }
     }
 
-    private Button createCategoryButton(String name, CategoryClass category, String imagePath) {
+    private Button createCategoryButton(String name, CategoryClass category, String imagePath, int iconSize) {
         Button button = new Button(name);
         button.setMaxWidth(Double.MAX_VALUE);
-        button.setContentDisplay(ContentDisplay.TOP); // Text above the image
+        button.setContentDisplay(ContentDisplay.TOP); // Ensure the image is below the text
 
+        // Set the image
         ImageResizer resizer = new ImageResizer();
-        Image resizedIcon = resizer.resizeImage(getClass().getResource(imagePath).toString(), ICON_SIZE, ICON_SIZE);
+        Image resizedIcon = resizer.resizeImage(getClass().getResource(imagePath).toString(), iconSize, iconSize);
         ImageView iconView = new ImageView(resizedIcon);
         button.setGraphic(iconView);
 
@@ -178,45 +236,4 @@ public class ControllerCategory {
 
         return electronics;
     }
-
-@FXML
-private void handleExport() {
-    FileChooser fileChooser = new FileChooser();
-    fileChooser.setTitle("Export Categories");
-    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
-    File file = fileChooser.showSaveDialog(exportButton.getScene().getWindow());
-
-    if (file != null) {
-        try (Writer writer = new FileWriter(file)) {
-            Gson gson = new Gson();
-            CategoryDTO rootCategoryDTO = rootCategory.toCategoryDTO();
-            gson.toJson(rootCategoryDTO, writer);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-}
-
-@FXML
-private void handleImport() {
-    FileChooser fileChooser = new FileChooser();
-    fileChooser.setTitle("Import Categories");
-    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
-    File file = fileChooser.showOpenDialog(importButton.getScene().getWindow());
-
-    if (file != null) {
-        try (Reader reader = new FileReader(file)) {
-            Gson gson = new Gson();
-            CategoryDTO rootCategoryDTO = gson.fromJson(reader, CategoryDTO.class);
-            rootCategory = CategoryClass.fromCategoryDTO(rootCategoryDTO);
-            currentCategory = rootCategory;
-            updateTreeView();
-            updateTileGrid();
-            updateProductList(currentCategory);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-}
-
 }
