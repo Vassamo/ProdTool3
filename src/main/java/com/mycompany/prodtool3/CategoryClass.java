@@ -148,5 +148,27 @@ public class CategoryClass {
         return (Stage) button.getScene().getWindow();
     }
     
+        
+        public CategoryDTO toCategoryDTO() {
+        CategoryDTO dto = new CategoryDTO(this.name);
+        for (Product product : this.products) {
+            dto.getProducts().add(new ProductDTO(product.getName()));
+        }
+        for (CategoryClass subcategory : this.subcategories) {
+            dto.getSubcategories().add(subcategory.toCategoryDTO());
+        }
+        return dto;
+    }
+
+    public static CategoryClass fromCategoryDTO(CategoryDTO dto) {
+        CategoryClass category = new CategoryClass(dto.getName());
+        for (ProductDTO productDTO : dto.getProducts()) {
+            category.addProduct(new Product(productDTO.getName()));
+        }
+        for (CategoryDTO subcategoryDTO : dto.getSubcategories()) {
+            category.addSubcategory(CategoryClass.fromCategoryDTO(subcategoryDTO));
+        }
+        return category;
+    }
     
 }

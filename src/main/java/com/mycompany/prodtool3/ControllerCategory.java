@@ -1,118 +1,199 @@
 package com.mycompany.prodtool3;
 
+import java.io.FileWriter;
+import java.io.FileReader;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import java.io.File;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-import javafx.collections.FXCollections;
-import javafx.scene.layout.GridPane;
-import javafx.scene.control.Button;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.TilePane;
+import javafx.scene.control.ContentDisplay;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 public class ControllerCategory {
-    @FXML   
+
+    @FXML
     private TreeView<String> categoryTreeView;
     @FXML
     private ListView<String> productListView;
     @FXML
-    private GridPane mainGrid;
+    private TilePane tileGrid;
     @FXML
     private Button addCategoryButton;
     @FXML
     private Button addProductButton;
+    @FXML
+    private Button exportButton;
+    @FXML
+    private Button importButton;
 
     private CategoryClass rootCategory;
     private CategoryClass currentCategory;
 
+    private static final int ICON_SIZE_DEFAULT = 48;
+    private static final int ICON_SIZE_ACTION_BUTTONS = 32;
+
     public void initialize() {
-        // Initialize data and set up the TreeView
+        initializeIcons();
         rootCategory = createSampleData();
         currentCategory = rootCategory;
         updateTreeView();
-        updateMainGrid();
+        updateTileGrid();
         updateProductList(currentCategory);
-        
+
         categoryTreeView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                String selectedCategoryName = newValue.getValue();
-                CategoryClass selectedCategory = findCategoryByName(rootCategory, selectedCategoryName);
+                CategoryClass selectedCategory = findCategoryByName(rootCategory, newValue.getValue());
                 if (selectedCategory != null) {
                     currentCategory = selectedCategory;
-                    System.out.println("Switched to category: " + selectedCategory.getName()); // Log category switch
+                    System.out.println("Switched to category: " + selectedCategory.getName());
                     updateProductList(selectedCategory);
-                    updateMainGrid();
+                    updateTileGrid();
                 }
             }
         });
     }
 
+    private void initializeIcons() {
+        ImageResizer resizer = new ImageResizer();
+        addCategoryButton.setGraphic(createIcon(resizer, "/DeafultImages/addFolder.png", ICON_SIZE_ACTION_BUTTONS));
+        addProductButton.setGraphic(createIcon(resizer, "/DeafultImages/addFile.png", ICON_SIZE_ACTION_BUTTONS));
+        exportButton.setGraphic(createIcon(resizer, "/DeafultImages/export.png", ICON_SIZE_ACTION_BUTTONS));
+        importButton.setGraphic(createIcon(resizer, "/DeafultImages/import.png", ICON_SIZE_ACTION_BUTTONS));
+    }
+
+    private ImageView createIcon(ImageResizer resizer, String path, int size) {
+        Image resizedIcon = resizer.resizeImage(getClass().getResource(path).toString(), size, size);
+        return new ImageView(resizedIcon);
+    }
+
     @FXML
     private void handleAddCategoryButtonClick() {
-        CategoryClass selectedCategory = currentCategory;
         Stage stage = (Stage) addCategoryButton.getScene().getWindow();
-        ControllerAddCategoryDialog dialog = new ControllerAddCategoryDialog(stage, selectedCategory);
+        ControllerAddCategoryDialog dialog = new ControllerAddCategoryDialog(stage, currentCategory);
         dialog.showAndWait();
-        // Refresh view after adding a new category
         updateTreeView();
-        updateMainGrid();
+        updateTileGrid();
     }
 
     @FXML
     private void handleAddProductButtonClick() {
-        CategoryClass selectedCategory = currentCategory;
-        if (selectedCategory != null) {
-            ControllerAddProductDialog dialog = new ControllerAddProductDialog(selectedCategory);
+        if (currentCategory != null) {
+            ControllerAddProductDialog dialog = new ControllerAddProductDialog(currentCategory);
             dialog.showAndWait();
-            // Refresh view after adding a new product
-            updateProductList(selectedCategory);
+            updateProductList(currentCategory);
         }
     }
 
+    @FXML
+    private void handleExport() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Export Categories");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
+        Stage stage = (Stage) exportButton.getScene().getWindow();
+        File file = fileChooser.showSaveDialog(stage);
+
+        if (file != null) {
+            try (FileWriter writer = new FileWriter(file)) {
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                gson.toJson(rootCategory, writer);
+                showAlert("Export Successful", "The export was completed successfully.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @FXML
+    private void handleImport() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Import Categories");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
+        Stage stage = (Stage) importButton.getScene().getWindow();
+        File file = fileChooser.showOpenDialog(stage);
+
+        if (file != null) {
+            try (FileReader reader = new FileReader(file)) {
+                Gson gson = new Gson();
+                Type categoryType = new TypeToken<CategoryClass>() {}.getType();
+                rootCategory = gson.fromJson(reader, categoryType);
+                currentCategory = rootCategory;
+                updateTreeView();
+                updateTileGrid();
+                updateProductList(currentCategory);
+                showAlert("Import Successful", "The import was completed successfully.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void showAlert(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+
     private void updateTreeView() {
-        TreeItem<String> rootItem = createTreeItem(rootCategory);
-        categoryTreeView.setRoot(rootItem);
+        categoryTreeView.setRoot(createTreeItem(rootCategory));
         categoryTreeView.setShowRoot(true);
     }
 
     private void updateProductList(CategoryClass selectedCategory) {
-        if (selectedCategory != null) {
-            List<String> productNames = selectedCategory.getProductsNames();
-            productListView.setItems(FXCollections.observableArrayList(productNames));
-        } else {
-            productListView.setItems(FXCollections.observableArrayList());
+        List<String> productNames = selectedCategory != null ? selectedCategory.getProductsNames() : List.of();
+        productListView.setItems(FXCollections.observableArrayList(productNames));
+    }
+
+    private void updateTileGrid() {
+        tileGrid.getChildren().clear();
+
+        if (currentCategory.getParentCategory() != null) {
+            Button backButton = createCategoryButton("Back", currentCategory.getParentCategory(), "/DeafultImages/back.png", ICON_SIZE_DEFAULT);
+            tileGrid.getChildren().add(backButton);
+        }
+
+        for (CategoryClass subcategory : currentCategory.getSubcategories()) {
+            Button button = createCategoryButton(subcategory.getName(), subcategory, "/DeafultImages/folder.png", ICON_SIZE_DEFAULT);
+            tileGrid.getChildren().add(button);
         }
     }
 
-    private void updateMainGrid() {
-        mainGrid.getChildren().clear();
+    private Button createCategoryButton(String name, CategoryClass category, String imagePath, int iconSize) {
+        Button button = new Button(name);
+        button.setMaxWidth(Double.MAX_VALUE);
+        button.setContentDisplay(ContentDisplay.TOP); // Ensure the image is below the text
 
-        int columnIndex = 0;
+        // Set the image
+        ImageResizer resizer = new ImageResizer();
+        Image resizedIcon = resizer.resizeImage(getClass().getResource(imagePath).toString(), iconSize, iconSize);
+        ImageView iconView = new ImageView(resizedIcon);
+        button.setGraphic(iconView);
 
-        if (currentCategory.getParentCategory() != null) {
-            Button backButton = new Button("Back");
-            backButton.setMaxWidth(Double.MAX_VALUE);
-            backButton.setOnAction(e -> {
-                currentCategory = currentCategory.getParentCategory();
-                System.out.println("Switched to category: " + currentCategory.getName()); // Log category switch
-                updateMainGrid();
-                updateProductList(currentCategory);
-            });
-            mainGrid.add(backButton, columnIndex++, 0);
-        }
+        button.setOnAction(e -> {
+            currentCategory = category;
+            System.out.println("Switched to category: " + category.getName());
+            updateTileGrid();
+            updateProductList(currentCategory);
+        });
 
-        List<CategoryClass> subcategories = currentCategory.getSubcategories();
-        for (CategoryClass subcategory : subcategories) {
-            Button button = new Button(subcategory.getName());
-            button.setMaxWidth(Double.MAX_VALUE);
-            button.setOnAction(e -> {
-                currentCategory = subcategory;
-                System.out.println("Switched to category: " + subcategory.getName()); // Log category switch
-                updateMainGrid();
-                updateProductList(currentCategory);
-            });
-            mainGrid.add(button, columnIndex++, 0);
-        }
+        return button;
     }
 
     private CategoryClass findCategoryByName(CategoryClass currentCategory, String categoryName) {
@@ -130,7 +211,7 @@ public class ControllerCategory {
 
     private TreeItem<String> createTreeItem(CategoryClass category) {
         TreeItem<String> item = new TreeItem<>(category.getName());
-        item.setExpanded(true); // Optionally expand items on creation
+        item.setExpanded(true);
         for (CategoryClass subcategory : category.getSubcategories()) {
             item.getChildren().add(createTreeItem(subcategory));
         }
@@ -143,14 +224,13 @@ public class ControllerCategory {
         CategoryClass smartphones = new CategoryClass("Smartphones", electronics);
         CategoryClass lenovo = new CategoryClass("lenovo", laptops);
         CategoryClass kiano = new CategoryClass("kiano", laptops);
-        
+
         electronics.addSubcategory(laptops);
         electronics.addSubcategory(smartphones);
         laptops.addSubcategory(lenovo);
         laptops.addSubcategory(kiano);
 
         kiano.addProduct(new Product("Laptop B"));
-
         smartphones.addProduct(new Product("Smartphone A"));
         smartphones.addProduct(new Product("Smartphone B"));
 
