@@ -1,18 +1,23 @@
 package com.mycompany.prodtool3;
 
-import java.util.List;
-import javafx.collections.FXCollections;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
-import javafx.scene.control.Tooltip;
-import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.TilePane;
-import javafx.scene.control.ContentDisplay;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
+import java.io.*;
+import java.lang.reflect.Type;
+import java.util.List;
+import javafx.collections.FXCollections;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.TreeItem;
 
 public class ControllerCategory {
 
@@ -26,12 +31,15 @@ public class ControllerCategory {
     private Button addCategoryButton;
     @FXML
     private Button addProductButton;
+    @FXML
+    private Button exportButton; // Dodaj to
+    @FXML
+    private Button importButton; // Dodaj to
 
     private CategoryClass rootCategory;
     private CategoryClass currentCategory;
 
-    private static final int ICON_SIZE_BUTTONS = 32; // Icon size for addCategoryButton and addProductButton
-    private static final int ICON_SIZE_TILEPANE = 48; // Icon size for TilePane buttons
+    private static final int ICON_SIZE = 32;
 
     public void initialize() {
         initializeIcons();
@@ -52,12 +60,15 @@ public class ControllerCategory {
                 }
             }
         });
+
+        exportButton.setOnAction(event -> handleExport());
+        importButton.setOnAction(event -> handleImport());
     }
 
     private void initializeIcons() {
         ImageResizer resizer = new ImageResizer();
-        addCategoryButton.setGraphic(createIcon(resizer, "/DeafultImages/addFolder.png", ICON_SIZE_BUTTONS));
-        addProductButton.setGraphic(createIcon(resizer, "/DeafultImages/addFile.png", ICON_SIZE_BUTTONS));
+        addCategoryButton.setGraphic(createIcon(resizer, "/DeafultImages/addFolder.png", ICON_SIZE));
+        addProductButton.setGraphic(createIcon(resizer, "/DeafultImages/addFile.png", ICON_SIZE));
     }
 
     private ImageView createIcon(ImageResizer resizer, String path, int size) {
@@ -97,31 +108,25 @@ public class ControllerCategory {
         tileGrid.getChildren().clear();
 
         if (currentCategory.getParentCategory() != null) {
-            Button backButton = createCategoryButton("", currentCategory.getParentCategory(), "/DeafultImages/back.png", "Back");
+            Button backButton = createCategoryButton("Back", currentCategory.getParentCategory(), "/DeafultImages/back.png");
             tileGrid.getChildren().add(backButton);
         }
 
         for (CategoryClass subcategory : currentCategory.getSubcategories()) {
-            Button button = createCategoryButton(subcategory.getName(), subcategory, "/DeafultImages/folder.png", null);
+            Button button = createCategoryButton(subcategory.getName(), subcategory, "/DeafultImages/folder.png");
             tileGrid.getChildren().add(button);
         }
     }
 
-    private Button createCategoryButton(String name, CategoryClass category, String imagePath, String tooltipText) {
+    private Button createCategoryButton(String name, CategoryClass category, String imagePath) {
         Button button = new Button(name);
         button.setMaxWidth(Double.MAX_VALUE);
-        button.setContentDisplay(ContentDisplay.TOP); // Ensure the text is above the image
+        button.setContentDisplay(ContentDisplay.TOP); // Text above the image
 
-        // Set the image
         ImageResizer resizer = new ImageResizer();
-        Image resizedIcon = resizer.resizeImage(getClass().getResource(imagePath).toString(), ICON_SIZE_TILEPANE, ICON_SIZE_TILEPANE);
+        Image resizedIcon = resizer.resizeImage(getClass().getResource(imagePath).toString(), ICON_SIZE, ICON_SIZE);
         ImageView iconView = new ImageView(resizedIcon);
         button.setGraphic(iconView);
-
-        if (tooltipText != null) {
-            Tooltip tooltip = new Tooltip(tooltipText);
-            Tooltip.install(button, tooltip);
-        }
 
         button.setOnAction(e -> {
             currentCategory = category;
@@ -173,4 +178,45 @@ public class ControllerCategory {
 
         return electronics;
     }
+
+@FXML
+private void handleExport() {
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.setTitle("Export Categories");
+    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
+    File file = fileChooser.showSaveDialog(exportButton.getScene().getWindow());
+
+    if (file != null) {
+        try (Writer writer = new FileWriter(file)) {
+            Gson gson = new Gson();
+            CategoryDTO rootCategoryDTO = rootCategory.toCategoryDTO();
+            gson.toJson(rootCategoryDTO, writer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+@FXML
+private void handleImport() {
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.setTitle("Import Categories");
+    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
+    File file = fileChooser.showOpenDialog(importButton.getScene().getWindow());
+
+    if (file != null) {
+        try (Reader reader = new FileReader(file)) {
+            Gson gson = new Gson();
+            CategoryDTO rootCategoryDTO = gson.fromJson(reader, CategoryDTO.class);
+            rootCategory = CategoryClass.fromCategoryDTO(rootCategoryDTO);
+            currentCategory = rootCategory;
+            updateTreeView();
+            updateTileGrid();
+            updateProductList(currentCategory);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
 }
