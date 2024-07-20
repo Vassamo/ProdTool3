@@ -11,6 +11,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import java.io.File;
+import java.io.Reader;
+import java.io.Writer;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -100,56 +102,57 @@ public class ControllerCategory {
         }
     }
 
-    @FXML
-    private void handleExport() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Export Categories");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
-        Stage stage = (Stage) exportButton.getScene().getWindow();
-        File file = fileChooser.showSaveDialog(stage);
+private void showAlert(String title, String message) {
+    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+    alert.setTitle(title);
+    alert.setHeaderText(null);
+    alert.setContentText(message);
+    alert.showAndWait();
+}
 
-        if (file != null) {
-            try (FileWriter writer = new FileWriter(file)) {
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                gson.toJson(rootCategory, writer);
-                showAlert("Export Successful", "The export was completed successfully.");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+@FXML
+private void handleExport() {
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.setTitle("Export Categories");
+    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
+    File file = fileChooser.showSaveDialog(exportButton.getScene().getWindow());
+
+    if (file != null) {
+        try (Writer writer = new FileWriter(file)) {
+            Gson gson = new Gson();
+            CategoryDTO rootCategoryDTO = rootCategory.toCategoryDTO();
+            gson.toJson(rootCategoryDTO, writer);
+            showAlert("Export Successful", "The categories have been successfully exported.");
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Export Error", "An error occurred while exporting categories.");
         }
     }
+}
 
-    @FXML
-    private void handleImport() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Import Categories");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
-        Stage stage = (Stage) importButton.getScene().getWindow();
-        File file = fileChooser.showOpenDialog(stage);
+@FXML
+private void handleImport() {
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.setTitle("Import Categories");
+    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
+    File file = fileChooser.showOpenDialog(importButton.getScene().getWindow());
 
-        if (file != null) {
-            try (FileReader reader = new FileReader(file)) {
-                Gson gson = new Gson();
-                Type categoryType = new TypeToken<CategoryClass>() {}.getType();
-                rootCategory = gson.fromJson(reader, categoryType);
-                currentCategory = rootCategory;
-                updateTreeView();
-                updateTileGrid();
-                updateProductList(currentCategory);
-                showAlert("Import Successful", "The import was completed successfully.");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    if (file != null) {
+        try (Reader reader = new FileReader(file)) {
+            Gson gson = new Gson();
+            CategoryDTO rootCategoryDTO = gson.fromJson(reader, CategoryDTO.class);
+            rootCategory = CategoryClass.fromCategoryDTO(rootCategoryDTO);
+            currentCategory = rootCategory;
+            updateTreeView();
+            updateTileGrid();
+            updateProductList(currentCategory);
+            showAlert("Import Successful", "The categories have been successfully imported.");
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Import Error", "An error occurred while importing categories.");
         }
     }
-
-    private void showAlert(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
-    }
+}
 
     private void updateTreeView() {
         categoryTreeView.setRoot(createTreeItem(rootCategory));
