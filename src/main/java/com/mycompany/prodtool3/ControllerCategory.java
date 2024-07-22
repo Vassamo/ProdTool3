@@ -111,6 +111,7 @@ private void handleAddCategoryButtonClick() {
 
 
 
+
     @FXML
     private void handleAddProductButtonClick() {
         if (currentCategory != null) {

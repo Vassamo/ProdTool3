@@ -2,9 +2,8 @@ package com.mycompany.prodtool3;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.stage.FileChooser;
+import javafx.scene.control.Alert;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -13,6 +12,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.layout.VBox;
 
 public class ControllerAddCategoryDialog {
 
@@ -31,14 +34,80 @@ public class ControllerAddCategoryDialog {
     private Stage stage;
     private CategoryClass parentCategory;
     private File chosenImageFile;
+    
+    private Stage dialogStage;
+    
+    @FXML
+    private void handleOk() {
+        String categoryName = categoryNameField.getText();
+        if (categoryName != null && !categoryName.trim().isEmpty()) {
+            if (parentCategory != null) {
+                parentCategory.addSubcategory(new CategoryClass(categoryName, parentCategory));
+            }
+            if (dialogStage != null) {
+                dialogStage.close();
+            }
+        } else {
+            showAlert("Invalid Input", "Category name cannot be empty.");
+        }
+    }
+
+    @FXML
+    private void handleCancel() {
+        if (dialogStage != null) {
+            dialogStage.close();
+        }
+    }
+
+    public void setParentCategory(CategoryClass parentCategory) {
+        this.parentCategory = parentCategory;
+    }
+
+    public void setStage(Stage stage) {
+        this.dialogStage = stage;
+        this.stage = stage; // Ustawienie głównego okna aplikacji
+    }
+
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 
     @FXML
     private void handleChooseImage() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg")
-        );
-        chosenImageFile = fileChooser.showOpenDialog(stage);
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/mycompany/prodtool3/ImageSelectionDialog.fxml"));
+            VBox root = loader.load();
+            
+            ControllerImageSelectionDialog controller = loader.getController();
+            if (controller == null) {
+                throw new RuntimeException("Controller is null. Check FXML file and controller class.");
+            }
+
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.initOwner(this.stage); // Ustawienie właściciela okna
+            dialogStage.setTitle("Select Image");
+            dialogStage.setScene(new Scene(root));
+            
+            controller.setDialogStage(dialogStage); // Ustawiamy `Stage` w kontrolerze
+            
+            dialogStage.showAndWait();
+            
+            // Uzyskaj wybrany plik obrazu
+            File selectedFile = controller.getSelectedImageFile();
+            if (selectedFile != null) {
+                this.chosenImageFile = selectedFile; // Przypisz wybrany plik do zmiennej
+                System.out.println("Selected image: " + selectedFile.getAbsolutePath());
+            } else {
+                System.out.println("No image selected.");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -48,7 +117,7 @@ public class ControllerAddCategoryDialog {
             String imagePath = null;
             if (chosenImageFile != null) {
                 try {
-                    Path destDir = Paths.get("UserImages");
+                    Path destDir = Paths.get("Session/UserImages");
                     Files.createDirectories(destDir);
                     Path destPath = destDir.resolve(chosenImageFile.getName());
                     Files.copy(chosenImageFile.toPath(), destPath);
@@ -59,20 +128,9 @@ public class ControllerAddCategoryDialog {
             }
             CategoryClass newCategory = new CategoryClass(categoryName, parentCategory, imagePath);
             parentCategory.addSubcategory(newCategory);
+            if (this.dialogStage != null) {
+                this.dialogStage.close(); // Zamknij okno dialogowe
+            }
         }
-        stage.close();
-    }
-
-    @FXML
-    private void handleCancel() {
-        stage.close();
-    }
-
-    public void setStage(Stage stage) {
-        this.stage = stage;
-    }
-
-    public void setParentCategory(CategoryClass parentCategory) {
-        this.parentCategory = parentCategory;
     }
 }

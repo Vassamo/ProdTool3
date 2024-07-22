@@ -1,10 +1,11 @@
+com\mycompany\prodtool3\CategoryDTO.class
+module-info.class
+com\mycompany\prodtool3\CategoryClass.class
 com\mycompany\prodtool3\Product.class
 com\mycompany\prodtool3\ImageResizer.class
 com\mycompany\prodtool3\ControllerAddProductDialog.class
-com\mycompany\prodtool3\CategoryDTO.class
 com\mycompany\prodtool3\ControllerCategory.class
 com\mycompany\prodtool3\ControllerAddCategoryDialog.class
-module-info.class
-com\mycompany\prodtool3\CategoryClass.class
+com\mycompany\prodtool3\ControllerImageSelectionDialog.class
 com\mycompany\prodtool3\App.class
 com\mycompany\prodtool3\ProductDTO.class

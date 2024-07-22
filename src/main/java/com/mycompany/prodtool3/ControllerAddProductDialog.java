@@ -14,6 +14,8 @@ public class ControllerAddProductDialog {
     private Button addButton;
     private Button cancelButton;
     private CategoryClass category;
+    
+    
 
     public ControllerAddProductDialog(CategoryClass category) {
         this.category = category;
@@ -43,4 +45,6 @@ public class ControllerAddProductDialog {
     public void showAndWait() {
         stage.showAndWait();
     }
+
 }
+
