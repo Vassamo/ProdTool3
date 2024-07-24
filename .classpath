@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="ProdTool3/src/main/java"/>
+	<classpathentry kind="lib" path="ProdTool3/target/ProdTool3-1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="C:/Users/jotpl/Downloads/openjfx-22.0.1_windows-x64_bin-sdk/javafx-sdk-22.0.1/lib/javafx.base.jar"/>
+	<classpathentry kind="lib" path="C:/Users/jotpl/Downloads/openjfx-22.0.1_windows-x64_bin-sdk/javafx-sdk-22.0.1/lib/javafx.controls.jar"/>
+	<classpathentry kind="lib" path="C:/Users/jotpl/Downloads/openjfx-22.0.1_windows-x64_bin-sdk/javafx-sdk-22.0.1/lib/javafx.fxml.jar"/>
+	<classpathentry kind="lib" path="C:/Users/jotpl/Downloads/openjfx-22.0.1_windows-x64_bin-sdk/javafx-sdk-22.0.1/lib/javafx.graphics.jar"/>
+	<classpathentry kind="lib" path="C:/Users/jotpl/Downloads/openjfx-22.0.1_windows-x64_bin-sdk/javafx-sdk-22.0.1/lib/javafx.media.jar"/>
+	<classpathentry kind="lib" path="C:/Users/jotpl/Downloads/openjfx-22.0.1_windows-x64_bin-sdk/javafx-sdk-22.0.1/lib/javafx.swing.jar"/>
+	<classpathentry kind="lib" path="C:/Users/jotpl/Downloads/openjfx-22.0.1_windows-x64_bin-sdk/javafx-sdk-22.0.1/lib/javafx.web.jar"/>
+	<classpathentry kind="lib" path="C:/Users/jotpl/Downloads/openjfx-22.0.1_windows-x64_bin-sdk/javafx-sdk-22.0.1/lib/javafx-swt.jar"/>
+	<classpathentry kind="lib" path="C:/Users/jotpl/Downloads/gson-2.8.9.jar"/>
+	<classpathentry kind="output" path="ProdTool3/target/classes"/>
+</classpath>

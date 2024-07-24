@@ -13,12 +13,8 @@ public class ControllerAddProductDialog {
     private TextField productNameField;
     private Button addButton;
     private Button cancelButton;
-    private CategoryClass category;
     
-    
-
     public ControllerAddProductDialog(CategoryClass category) {
-        this.category = category;
         stage = new Stage();
         stage.initModality(Modality.APPLICATION_MODAL);
 

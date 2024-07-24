@@ -22,6 +22,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Arrays;
 import java.util.List;
 
 import com.google.gson.Gson;
@@ -179,9 +180,10 @@ private void handleAddCategoryButtonClick() {
     }
 
     private void updateProductList(CategoryClass selectedCategory) {
-        List<String> productNames = selectedCategory != null ? selectedCategory.getProductsNames() : List.of();
+        List<String> productNames = selectedCategory != null ? selectedCategory.getProductsNames() : Arrays.asList();
         productListView.setItems(FXCollections.observableArrayList(productNames));
     }
+
 
     private void updateTileGrid() {
         tileGrid.getChildren().clear();
