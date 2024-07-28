@@ -1,9 +1,14 @@
 package com.mycompany.prodtool3;
 
 import javafx.fxml.FXML;
+import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.TilePane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -19,13 +24,32 @@ public class ControllerImageSelectionDialog {
     @FXML
     private TilePane tilePane;
 
+    @FXML
+    private TextField ImageTitle; // Pole tekstowe do wyświetlania nazwy wybranego pliku
+
     private Stage dialogStage;
     private File selectedImageFile;
     private static final int IMGres = 64;
+    private ImageView currentlySelectedImageView; // Przechowuje obecnie zaznaczony obraz
 
     public void initialize() {
         loadImages();
+        // Dodaj słuchacza sceny, jeśli scena nie jest jeszcze ustawiona
+        if (tilePane.getScene() == null) {
+            tilePane.sceneProperty().addListener((observable, oldScene, newScene) -> {
+                if (newScene != null) {
+                    System.out.println("Scene has been set, setting up key handling.");
+                    setupKeyHandling(newScene);
+                }
+            });
+        } else {
+            System.out.println("Scene is already set, setting up key handling.");
+            setupKeyHandling(tilePane.getScene());
+        }
     }
+
+    @FXML
+    private TextField imageTitleField;
 
     private void loadImages() {
         try {
@@ -42,7 +66,15 @@ public class ControllerImageSelectionDialog {
                     ImageView imageView = new ImageView(image);
                     imageView.setFitWidth(IMGres);
                     imageView.setFitHeight(IMGres);
-                    imageView.setOnMouseClicked(event -> handleImageSelection(file));
+                    imageView.setFocusTraversable(true);
+
+                    imageView.setOnMouseClicked(event -> handleImageSelection(file, imageView));
+                    imageView.setOnKeyPressed(event -> {
+                        if (event.getCode() == KeyCode.ENTER) {
+                            handleImageSelection(file, imageView);
+                        }
+                    });
+
                     tilePane.getChildren().add(imageView);
                 }
             }
@@ -51,10 +83,45 @@ public class ControllerImageSelectionDialog {
         }
     }
 
-    private void handleImageSelection(File file) {
+    private void setupKeyHandling(Scene scene) {
+        if (scene == null) {
+            System.err.println("Scene is null in setupKeyHandling.");
+            return;
+        }
+
+        System.out.println("Adding stylesheets and key event filter.");
+        String cssResource = getClass().getResource("styles.css").toExternalForm();
+        if (cssResource == null) {
+            System.err.println("CSS resource not found.");
+        } else {
+            scene.getStylesheets().add(cssResource);
+        }
+
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() == KeyCode.TAB) {
+                Node focusedNode = scene.getFocusOwner();
+                if (focusedNode instanceof ImageView) {
+                    ImageView imageView = (ImageView) focusedNode;
+                    if (currentlySelectedImageView != null) {
+                        currentlySelectedImageView.getStyleClass().remove("selected-image"); // Resetuje styl poprzednio zaznaczonego obrazka
+                    }
+                    imageView.getStyleClass().add("selected-image"); // Dodaje styl do nowo zaznaczonego obrazka
+                    currentlySelectedImageView = imageView;
+                }
+            }
+        });
+    }
+
+    private void handleImageSelection(File file, ImageView imageView) {
         selectedImageFile = file;
+        ImageTitle.setText(file.getName()); // Ustaw nazwę wybranego pliku w polu tekstowym
         System.out.println("Selected image: " + selectedImageFile.getAbsolutePath());
-        dialogStage.close();
+
+        if (currentlySelectedImageView != null) {
+            currentlySelectedImageView.getStyleClass().remove("selected-image"); // Resetuje styl poprzednio zaznaczonego obrazka
+        }
+        imageView.getStyleClass().add("selected-image"); // Dodaje styl do nowo zaznaczonego obrazka
+        currentlySelectedImageView = imageView;
     }
 
     @FXML

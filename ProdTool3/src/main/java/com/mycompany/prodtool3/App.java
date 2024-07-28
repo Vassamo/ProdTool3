@@ -22,8 +22,7 @@ public class App extends Application {
     }
 
     private static Scene scene;
-    private String CodePass = "123";
-    private boolean IsAdmin = false;
+    //private String CodePass = "123";
     
     
     @Override
@@ -50,12 +49,12 @@ public class App extends Application {
         launch(args);
     }
     
-    public void AdminRequest(String Code){
-        if(Code == CodePass) {
-            IsAdmin = true;
-        } else {
-            IsAdmin = false;
-        }
-    }
+//    public void AdminRequest(String Code){
+//        if(Code == CodePass) {
+//            IsAdmin = true;
+//        } else {
+//            IsAdmin = false;
+//        }
+//    }
 
 }

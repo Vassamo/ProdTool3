@@ -1,9 +1,11 @@
 package com.mycompany.prodtool3;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -14,12 +16,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.layout.VBox;
 
 public class ControllerAddCategoryDialog {
 
     @FXML
-    private TextField categoryNameField;
+    private TextFlow categoryNameFlow; // Zmieniono z categoryNameField na categoryNameFlow
 
     @FXML
     private Button chooseImageButton;
@@ -30,6 +31,9 @@ public class ControllerAddCategoryDialog {
     @FXML
     private Button cancelButton;
 
+    @FXML
+    private TextFlow imageTitleFlow; // Zmieniono z imageTitleField na imageTitleFlow
+
     private Stage stage;
     private CategoryClass parentCategory;
     private File chosenImageFile;
@@ -38,7 +42,7 @@ public class ControllerAddCategoryDialog {
     
     @FXML
     private void handleOk() {
-        String categoryName = categoryNameField.getText();
+        String categoryName = getTextFromTextFlow(categoryNameFlow);
         if (categoryName != null && !categoryName.trim().isEmpty()) {
             if (parentCategory != null) {
                 parentCategory.addSubcategory(new CategoryClass(categoryName, parentCategory));
@@ -100,6 +104,7 @@ public class ControllerAddCategoryDialog {
             File selectedFile = controller.getSelectedImageFile();
             if (selectedFile != null) {
                 this.chosenImageFile = selectedFile; // Przypisz wybrany plik do zmiennej
+                updateImageTitleFlow(selectedFile.getName()); // Wyświetl nazwę pliku w TextFlow
                 System.out.println("Selected image: " + selectedFile.getAbsolutePath());
             } else {
                 System.out.println("No image selected.");
@@ -109,9 +114,15 @@ public class ControllerAddCategoryDialog {
         }
     }
 
+    private void updateImageTitleFlow(String fileName) {
+        Text text = new Text(fileName);
+        imageTitleFlow.getChildren().clear();
+        imageTitleFlow.getChildren().add(text);
+    }
+
     @FXML
     private void handleAdd() {
-        String categoryName = categoryNameField.getText();
+        String categoryName = getTextFromTextFlow(categoryNameFlow);
         if (categoryName != null && !categoryName.isEmpty()) {
             String imagePath = null;
             if (chosenImageFile != null) {
@@ -131,5 +142,15 @@ public class ControllerAddCategoryDialog {
                 this.dialogStage.close(); // Zamknij okno dialogowe
             }
         }
+    }
+
+    private String getTextFromTextFlow(TextFlow textFlow) {
+        StringBuilder sb = new StringBuilder();
+        for (javafx.scene.Node node : textFlow.getChildren()) {
+            if (node instanceof Text) {
+                sb.append(((Text) node).getText());
+            }
+        }
+        return sb.toString();
     }
 }
